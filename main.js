@@ -13,7 +13,6 @@ const userRoute = require('./src/routes/userReg.routes')
 const applyRouter = require('./src/routes/applyForm.routes')
 
 app.use(cors())
-app.options('*', cors());
 app.use(express.json({ limit: '5mb' }))
 app.use(express.urlencoded({ extended: true }));
 
