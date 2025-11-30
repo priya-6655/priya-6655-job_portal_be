@@ -12,15 +12,8 @@ const mainJobcreate = require('./src/routes/mainJobPost.routes')
 const userRoute = require('./src/routes/userReg.routes')
 const applyRouter = require('./src/routes/applyForm.routes')
 
-app.use(cors({
-    origin: [
-        'https://hireme-a3k88eral-shanmuga-priyas-projects-853876e5.vercel.app',
-        'http://localhost:3000',
-        'http://localhost:5173'
-    ],
-    methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
-    credentials: true
-}))
+app.use(cors())
+app.options('*', cors());
 app.use(express.json({ limit: '5mb' }))
 app.use(express.urlencoded({ extended: true }));
 
