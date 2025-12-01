@@ -94,27 +94,32 @@ const viewUserApplication = async (req, res) => {
     try {
         const { companyId } = req.params
 
-        const getCompany = await companyReg.findByPk({
-            where: { companyId },
+        const getCompany = await companyReg.findByPk(companyId, {
             include: {
                 model: jobapply,
                 include: {
                     model: userReg,
-                    attributes: ['id', 'fname', 'lname', 'email', 'phone']
+                    attributes: ['id', 'fname', 'lname', 'mobile']
                 }
             }
         })
 
-        if (getCompany.length === 0) {
+        if (!getCompany) {
+            return res.status(404).json({ message: "Company not found" });
+        }
+
+        const applications = getCompany.jobapplies || [];
+
+        if (applications.length === 0) {
             return res.status(200).json({ message: "No applications found", userApplications: [] });
         }
 
-        const viewUserDetails = getCompany.map(app => ({
-            fname: app.userReg?.fname || '',
-            lname: app.userReg?.lname || '',
+        const viewUserDetails = applications.map(app => ({
+            fname: app.newUser?.fname || '',
+            lname: app.newUser?.lname || '',
             applyId: app.applyId,
             phone: app.phone,
-            email: app.email,
+            email: app.email,  // email comes from jobapply table, not newUser
             exp: app.exp,
             skill: app.skill,
             resume: app.resume,
