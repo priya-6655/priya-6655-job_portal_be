@@ -1,9 +1,12 @@
+require('dotenv').config()
 const express = require('express')
 const cors = require('cors')
 const sequelize = require('./src/config/db')
 const app = express()
 const port = process.env.PORT || 3000
 const association = require('./src/model/association.model')
+
+console.log("association", association)
 
 const hireRoutes = require('./src/routes/hiringpay.routes')
 const newComReg = require('./src/routes/companyReg.routes')

@@ -6,10 +6,12 @@ const mainjobPost = require('../model/mainJobPost.model')
 const saveuserApplyData = async (req, res) => {
     try {
         const { fname, lname, dob, email, phone, gender, city, exp, skill, cLetter, userId, companyId, jobId } = req.body
-        const resume = req.file?.filename
+        const resume = req.file?.path || req.file?.secure_url || null;
         const jobSeeker = await userReg.findByPk(Number(userId))
         const company = await companyReg.findByPk(companyId)
         const job = await mainjobPost.findByPk(jobId)
+
+        console.log("Uploaded resume response:", req.file);
 
         if (!company) {
             return res.status(404).json({ message: "Company not found" })
@@ -21,6 +23,12 @@ const saveuserApplyData = async (req, res) => {
 
         if (!job) {
             return res.status(404).json({ message: 'Job not found' })
+        }
+
+        const duplicate = await jobapply.findOne({ where: { userId, jobId } })
+
+        if (duplicate) {
+            return res.status(400).json({ message: "You have already applied for this job" })
         }
 
         const newApplication = await jobapply.create({
@@ -82,4 +90,40 @@ const getapplyJobDetails = async (req, res) => {
     }
 }
 
-module.exports = { saveuserApplyData, getapplyJobDetails }
+const viewUserApplication = async (req, res) => {
+    try {
+        const { companyId } = req.params
+
+        const getCompany = await companyReg.findByPk({
+            where: { companyId },
+            include: {
+                model: jobapply,
+                include: {
+                    model: userReg,
+                    attributes: ['id', 'fname', 'lname', 'email', 'phone']
+                }
+            }
+        })
+
+        if (getCompany.length === 0) {
+            return res.status(200).json({ message: "No applications found", userApplications: [] });
+        }
+
+        const viewUserDetails = getCompany.map(app => ({
+            fname: app.userReg?.fname || '',
+            lname: app.userReg?.lname || '',
+            applyId: app.applyId,
+            phone: app.phone,
+            email: app.email,
+            exp: app.exp,
+            skill: app.skill,
+            resume: app.resume,
+        }));
+
+        res.status(200).json({ userApplications: viewUserDetails });
+    } catch (error) {
+        res.status(500).json({ message: "Server error", error: error.message });
+    }
+}
+
+module.exports = { saveuserApplyData, getapplyJobDetails, viewUserApplication }
